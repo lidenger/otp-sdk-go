@@ -28,10 +28,10 @@ func Conf(serverSign, otpServerAddr, ServerKey, ServerIV string) {
 	iv = ServerIV
 }
 
-type Result struct {
+type Result[T any] struct {
 	Code int    `json:"code"`
-	Data string `json:"data"`
 	Msg  string `json:"msg"`
+	Data T      `json:"data"`
 }
 
 // 使用接入服务的密钥和IV生成time token
@@ -73,7 +73,7 @@ func GenAccessToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	result, err := readResult(resp)
+	result, err := readResult[string](resp)
 	if err != nil {
 		return "", err
 	}
@@ -90,7 +90,7 @@ func VerifyAccessToken(token string) error {
 	if err != nil {
 		return err
 	}
-	_, err = readResult(resp)
+	_, err = readResult[string](resp)
 	return err
 }
 

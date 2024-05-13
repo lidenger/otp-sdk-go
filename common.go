@@ -13,12 +13,13 @@ const (
 
 	AddAccountSecretPath = "/v1/secret"
 	GetAccountSecretPath = "/v1/secret"
+	VerifyCodePath       = "/v1/secret/valid"
 )
 
-func readResult(resp *http.Response) (*Result, error) {
+func readResult[T any](resp *http.Response) (*Result[T], error) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
-	result := &Result{}
+	result := &Result[T]{}
 	err = json.Unmarshal(body, result)
 	if err != nil {
 		return nil, err
@@ -27,4 +28,19 @@ func readResult(resp *http.Response) (*Result, error) {
 		return nil, errors.New(result.Msg)
 	}
 	return result, nil
+}
+
+func httpGetReq(url string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	token, err := GenAccessToken()
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", token)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	return resp, err
 }
